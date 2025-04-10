@@ -12,7 +12,8 @@ int main(int argc, char **argv, char **env)
 	// Tracing (vcd)
 	VerilatedVcdC* tfp = NULL;
 	const char* flag_vcd = Verilated::commandArgsPlusMatch("vcd");
-	if (flag_vcd && 0==strcmp(flag_vcd, "+vcd")) {
+	//if (flag_vcd && 0==strcmp(flag_vcd, "+vcd")) {
+	if (1) {
 		Verilated::traceEverOn(true);
 		tfp = new VerilatedVcdC;
 		top->trace (tfp, 99);

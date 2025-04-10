@@ -100,3 +100,22 @@ r_type_insn(0b0000100, 0, 0, 0b100, regnum_ ## _rd, 0b0001011)
 #define picorv32_timer_insn(_rd, _rs) \
 r_type_insn(0b0000101, 0, regnum_ ## _rs, 0b110, regnum_ ## _rd, 0b0001011)
 
+
+//加载权重
+#define picorv32_coprocessor_weight() \
+r_type_insn(0b0000001,0,0,0b010,0,0b1011011)
+
+//进行计算
+#define picorv32_coprocessor_compute() \
+r_type_insn(0b0000001,0,0,0b100,0,0b1011011)
+
+//加载数 rs1是协处理器中的地址，rs2是输入的数据
+#define picorv32_coprocessor_load(_rs2, _rs1) \
+r_type_insn(0b0000001, regnum_ ## _rs2, regnum_ ## _rs1, 0b001, 0, 0b1011011)
+
+//读取数据
+#define picorv32_coprocessor_read(_rd, _rs) \
+r_type_insn(0b0000001, 0, regnum_ ## _rs, 0b101, regnum_ ## _rd, 0b1011011)
+
+
+

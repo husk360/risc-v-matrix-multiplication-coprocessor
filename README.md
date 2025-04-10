@@ -738,3 +738,4 @@ See `make area` in [scripts/vivado/](scripts/vivado/).
 | PicoRV32 (small)   |        761 |             48 |             442 |
 | PicoRV32 (regular) |        917 |             48 |             583 |
 | PicoRV32 (large)   |       2019 |             88 |            1085 |
+# risc-v-matrix-multiplication-cooprocessor

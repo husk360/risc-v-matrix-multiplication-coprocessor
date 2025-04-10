@@ -34,7 +34,7 @@ uint32_t *irq(uint32_t *regs, uint32_t irqs)
 		}
 	}
 
-	if ((irqs & (1<<4)) != 0) {
+	if ((irqs & (1<<4)) != 0) {     //看irqs的第四位是否为1
 		ext_irq_4_count++;
 		// print_str("[EXT-IRQ-4]");
 	}
@@ -44,9 +44,9 @@ uint32_t *irq(uint32_t *regs, uint32_t irqs)
 		// print_str("[EXT-IRQ-5]");
 	}
 
-	if ((irqs & 1) != 0) {
+	if ((irqs & 1) != 0) {		//看第0位（最低位）是否为1
 		timer_irq_count++;
-		// print_str("[TIMER-IRQ]");
+		 //print_str("[TIMER-IRQ]");
 	}
 
 	if ((irqs & 6) != 0)

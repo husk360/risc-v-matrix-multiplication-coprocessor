@@ -20,8 +20,7 @@ void print_str(const char *p);
 void print_dec(unsigned int val);
 void print_hex(unsigned int val, int digits);
 
-// hello.c
-void hello(void);
+
 
 // sieve.c
 void sieve(void);
@@ -39,5 +38,20 @@ void multest(void);
 
 // stats.c
 void stats(void);
+
+// hello.c
+void hello(void);
+
+//用于测试乘法
+void mulfun(void);
+
+
+//用于协处理器指令
+void hard_compute();
+void hard_weight_load();
+void hard_load(uint32_t a, uint32_t b);
+uint32_t hard_read(uint32_t a);
+
+
 
 #endif

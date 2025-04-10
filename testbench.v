@@ -82,8 +82,9 @@ module picorv32_wrapper #(
 
 	always @* begin
 		irq = 0;
-		irq[4] = &count_cycle[12:0];
-		irq[5] = &count_cycle[15:0];
+		irq[4] = &count_cycle[12:0];			//隔一段时间就触发一个中断
+		irq[5] = &count_cycle[15:0];   
+		//irq[0] = &count_cycle[15:0];
 	end
 
 	wire        mem_axi_awvalid;
@@ -170,7 +171,7 @@ module picorv32_wrapper #(
 `endif
 		.ENABLE_MUL(1),
 		.ENABLE_DIV(1),
-		.ENABLE_IRQ(1),
+		.ENABLE_IRQ(1),      			//激活了IRQ（中断）
 		.ENABLE_TRACE(1)
 `endif
 	) uut (

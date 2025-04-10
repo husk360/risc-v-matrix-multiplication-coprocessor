@@ -37,6 +37,11 @@
 	.global hard_rem
 	.global hard_remu
 	.global stats
+	.global mulfun
+	.global hard_compute
+	.global hard_load
+	.global hard_weight_load
+	.global hard_read
 
 reset_vec:
 	// no more than 16 bytes here !
@@ -386,73 +391,6 @@ start:
 
 	/* running tests from riscv-tests */
 
-#ifdef ENABLE_RVTST
-#  define TEST(n) \
-	.global n; \
-	addi x1, zero, 1000; \
-	picorv32_timer_insn(zero, x1); \
-	jal zero,n; \
-	.global n ## _ret; \
-	n ## _ret:
-#else
-#  define TEST(n) \
-	.global n ## _ret; \
-	n ## _ret:
-#endif
-
-	TEST(lui)
-	TEST(auipc)
-	TEST(j)
-	TEST(jal)
-	TEST(jalr)
-
-	TEST(beq)
-	TEST(bne)
-	TEST(blt)
-	TEST(bge)
-	TEST(bltu)
-	TEST(bgeu)
-
-	TEST(lb)
-	TEST(lh)
-	TEST(lw)
-	TEST(lbu)
-	TEST(lhu)
-
-	TEST(sb)
-	TEST(sh)
-	TEST(sw)
-
-	TEST(addi)
-	TEST(slti) // also tests sltiu
-	TEST(xori)
-	TEST(ori)
-	TEST(andi)
-	TEST(slli)
-	TEST(srli)
-	TEST(srai)
-
-	TEST(add)
-	TEST(sub)
-	TEST(sll)
-	TEST(slt) // what is with sltu ?
-	TEST(xor)
-	TEST(srl)
-	TEST(sra)
-	TEST(or)
-	TEST(and)
-
-	TEST(mulh)
-	TEST(mulhsu)
-	TEST(mulhu)
-	TEST(mul)
-
-	TEST(div)
-	TEST(divu)
-	TEST(rem)
-	TEST(remu)
-
-	TEST(simple)
 
 	/* set stack pointer */
 	lui sp,(128*1024)>>12
@@ -462,20 +400,28 @@ start:
 	addi gp, gp, %lo(0xdeadbeef)
 	addi tp, gp, 0
 
-#ifdef ENABLE_SIEVE
-	/* call sieve C code */
-	jal ra,sieve
-#endif
 
-#ifdef ENABLE_MULTST
-	/* call multest C code */
-	jal ra,multest
-#endif
+	
+	//jal ra,multest
 
-#ifdef ENABLE_STATS
-	/* call stats C code */
-	jal ra,stats
-#endif
+
+
+
+	jal ra, mulfun
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
 
 	/* print "DONE\n" */
 	lui a0,0x10000000>>12
@@ -490,7 +436,7 @@ start:
 	sw a4,0(a0)
 	sw a5,0(a0)
 
-	li a0, 0x20000000
+	li a0, 0x20000000		//如果在地址0x2000000上加载123456789,就会把——test_finsh置高，测试结束（但离trap还有一会儿）
 	li a1, 123456789
 	sw a1,0(a0)
 
@@ -533,3 +479,21 @@ hard_remu:
 	remu a0, a0, a1
 	ret
 
+
+
+
+hard_load:
+	picorv32_coprocessor_load(a0,a1)
+	ret
+
+hard_weight_load:
+	picorv32_coprocessor_weight()
+	ret
+
+hard_compute:
+	picorv32_coprocessor_compute()
+	ret
+
+hard_read:
+	picorv32_coprocessor_read(a0,a0)
+	ret
