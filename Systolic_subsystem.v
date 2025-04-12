@@ -173,7 +173,7 @@ always @(posedge clk ) begin
                 //当所有的计算都完成时
                 final_is_finish<=0;
             if(&is_finish) begin
-                final_is_finish<=1;
+              
                 index<=1;
                 is_finish<=`PE_ROW'b0;
                 l=0;
@@ -192,6 +192,9 @@ always @(posedge clk ) begin
               
         end
 end
+
+
+
 
     // 根据 sel_input 为 din_weight 或 X_value 赋值
     integer i1, j1, k1,i2;
@@ -216,14 +219,16 @@ end
         end
 
 
-         for (i2=0;i2<`PE_COL; i2=i2+1) begin
-         result[(`PE_ROW-index+1)*`PE_COL*`DWIDTH-1 -i2*`DWIDTH-:`DWIDTH]=final_sum[i2];
-            end
+
+
+
+
     end
 
 
 
-
+reg [`DWIDTH-1:0] final_sum_q=0;
+reg [31:0] store_index=0;
 
 
 // 计数器逻辑
@@ -238,6 +243,23 @@ end
            
             
         end 
+
+
+
+                if(final_sum[0]!=final_sum_q) begin
+
+                  store_index=store_index+1;   
+         for (i2=0;i2<`PE_COL; i2=i2+1) begin
+         result[(`PE_ROW-store_index+1)*`PE_COL*`DWIDTH-1 -i2*`DWIDTH-:`DWIDTH]<=final_sum[i2];
+         final_sum_q<=final_sum[0];
+        
+            end
+            
+                end else if(store_index==`PE_COL) begin
+                    store_index=0;
+                    final_is_finish<=1;
+                    final_sum_q<=0;
+                end
     end
 
 
