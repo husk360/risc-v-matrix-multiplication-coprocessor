@@ -54,8 +54,13 @@ module Systolic_subsystem(
     reg [31:0] index;     // 8-bit 索引 (用于控制哪排传入阵列)
     //reg counter;         // 1-bit 计数器，用于实现2周期更新
     
-   
-  
+    reg can_use;
+    //reg output_can_use;
+    wire can_use_wire[`PE_ROW:0][`PE_COL-1:0];
+
+
+
+
     integer v;
     integer l=0;
    
@@ -215,6 +220,7 @@ end
             for (k1 = 0; k1 < `PE_COL; k1 = k1 + 1) begin
                 if (index <= `PE_ROW)
                     X_value_firstrow[k1] = din_data[`PE_COL*(`PE_ROW-index+1)*`DWIDTH - k1*`DWIDTH - 1 -: `DWIDTH];
+                   
             end
         end
 
@@ -227,12 +233,13 @@ end
 
 
 
-reg [`DWIDTH-1:0] final_sum_q=0;
-reg [31:0] store_index=0;
+
+reg [31:0] store_index=1;
 
 
 // 计数器逻辑
     always @(posedge clk ) begin
+        can_use<=0;
         if (!rst_n) begin
             //counter <= 1'b0;  // 计数器复位
             index <= 1;   // 索引复位
@@ -240,26 +247,29 @@ reg [31:0] store_index=0;
            // counter <= counter + 1'b1; // 计数器递增
            
                 index <= (index == `PE_ROW) ? index : (index + 1); // 修正溢出的问题 
-           
+                can_use <=1;
             
-        end 
+        end  
 
-
-
-                if(final_sum[0]!=final_sum_q) begin
+        if(store_index==`PE_COL) begin
+                           
+                            final_is_finish<=1;
+                        
+        end else if(can_use_wire[`PE_ROW][0]) begin
 
                   store_index=store_index+1;   
-         for (i2=0;i2<`PE_COL; i2=i2+1) begin
-         result[(`PE_ROW-store_index+1)*`PE_COL*`DWIDTH-1 -i2*`DWIDTH-:`DWIDTH]<=final_sum[i2];
-         final_sum_q<=final_sum[0];
         
-            end
             
-                end else if(store_index==`PE_COL) begin
-                    store_index=0;
-                    final_is_finish<=1;
-                    final_sum_q<=0;
-                end
+                end 
+
+            if(load_is_work) begin
+                 for (i2=0;i2<`PE_COL; i2=i2+1) begin
+         result[(`PE_ROW-store_index+1)*`PE_COL*`DWIDTH-1 -i2*`DWIDTH-:`DWIDTH]<=final_sum[i2];
+         
+                 end
+            end else begin
+                store_index=1;
+            end
     end
 
 
@@ -318,6 +328,8 @@ end
                     .prod_out   (prod[1][j]),
                     .sum_out    (partial_sum[1][j]),
                     .Xout       (X_value_wire[1][(j+`PE_COL-1)%`PE_COL]),
+                    .can_use    (can_use),
+                    .output_can_use (can_use_wire[0][j]),
                     .valid_out  (PEvalid_wire[1][j])
                 );
             end
@@ -342,6 +354,8 @@ end
                     .prod_out   (prod[i+1][j]),
                     .sum_out    (partial_sum[i+1][j]),
                     .Xout       (X_value_wire[i+1][(j+`PE_COL-1)%`PE_COL]),
+                    .can_use    (can_use_wire[i-1][j]),
+                    .output_can_use (can_use_wire[i][j]),
                     .valid_out  (PEvalid_wire[i+1][j])
                 );
             end
@@ -359,6 +373,8 @@ end
                 .prod_in    (prod[`PE_ROW][k]),
                 .valid_in   (PEvalid_wire[`PE_ROW][k]),
                 .sum_out    (final_sum[k]),
+                .can_use    (can_use_wire[`PE_ROW-1][k]),
+                .output_can_use (can_use_wire[`PE_ROW][k]),
                 .valid_out  (PEvalid_wire[`PE_ROW+1][k])
             );
         end

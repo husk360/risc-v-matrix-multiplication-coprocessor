@@ -13,6 +13,8 @@ module GreatPE (
     input [`DWIDTH-1:0] prod_in,        //来自上一轮的乘法结果
     input valid_in_data,             // 输入有效信号
     input valid_in_weight,
+    input can_use,
+    output reg output_can_use,
     output reg [`DWIDTH-1:0] prod_out, // 当前乘法结果
     output reg [`DWIDTH-1:0] sum_out,  // 当前累加和
     output reg [`DWIDTH-1:0] Xout,     // X的输出，原封不动
@@ -74,6 +76,7 @@ reg in_vaild_add;
             Xout <= `DWIDTH'd0;
         end else if (valid_in_data) begin
             Xout <= Xin;  // X保持不变
+            output_can_use<=can_use;
         end
     end
 

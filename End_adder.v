@@ -10,6 +10,8 @@ module End_adder (
     input [`DWIDTH-1:0] sum_in,        // 来自上一轮的累加和
     input [`DWIDTH-1:0] prod_in,        //来自上一轮的乘法结果
     input valid_in,             // 输入有效信号
+    input can_use,
+    output reg output_can_use,
     output reg [`DWIDTH-1:0] sum_out,  // 最终的结果
     output reg valid_out        // 输出有效信号
 );
@@ -40,7 +42,7 @@ module End_adder (
          
         end else if (in_vaild_add) begin
             valid_out <= 1'b1;  // 输出有效信号
-            
+            output_can_use<=can_use;
         end else begin
             valid_out <= 1'b0;
          
