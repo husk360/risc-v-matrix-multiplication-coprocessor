@@ -30,7 +30,7 @@ void mulfun(void){
 
     for (int i=0;i<d*d;i++){
         hard_load(c,i);
-      //c=c+1;
+      c=c+1;
        
     }
 
