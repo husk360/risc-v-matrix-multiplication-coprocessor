@@ -81,6 +81,7 @@ void mulfun(void){
     print_chr('\n');
 }
 
+/*
    // print_str("soft calculation");
     print_chr('\n');
     
@@ -99,7 +100,8 @@ void mulfun(void){
     a3[k]=a;
 }
    
-}
+}*/
+
 
    
 
