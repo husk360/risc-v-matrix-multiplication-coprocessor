@@ -3,12 +3,11 @@
 void mulfun(void){
 
     uint32_t a=0x00004000;
-    uint32_t b=0x00000002;
     uint32_t result=0;
     uint32_t c=0x00000001;
     uint32_t d=0x00000000;
     uint32_t e=0x00000000;
-    
+
     d=12;
     /*
        result=a*b;
@@ -31,7 +30,7 @@ void mulfun(void){
 
     for (int i=0;i<d*d;i++){
         hard_load(c,i);
-      c=c+1;
+      //c=c+1;
        
     }
 
@@ -48,7 +47,15 @@ void mulfun(void){
     //hard_load(c,0x00000001);
 
     hard_compute();
+
+
+    
+
     uint32_t a3[d*d];
+
+
+
+
   for (int i;i<d*d;i++){
         a3[i]= e=hard_read(i);
 
