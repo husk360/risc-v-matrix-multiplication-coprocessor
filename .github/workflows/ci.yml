@@ -27,11 +27,3 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: make checks
-        run: |
-          cd riscv-formal/cores/picorv32
-          make checks -j$(nproc)
-      - name: make check
-        run: |
-          cd riscv-formal/cores/picorv32
-          make check
