@@ -9,8 +9,8 @@ module Systolic_subsystem(
     input out_valid,
    
     output  reg [`PE_ROW * `PE_COL * `DWIDTH - 1:0] result,
-    output  reg load_is_finish,             //加载权重完成
-    output reg  final_is_finish             //计算完成
+    output  reg load_is_finish,             //Complete loading weight 
+    output reg  final_is_finish             //Complete the calculation
    
 );
 
@@ -23,39 +23,37 @@ module Systolic_subsystem(
     
 
 	reg [1:0] mode, next_mode;
-	reg load_is_work, next_load_is_work;    //计算vaild信号
+	reg load_is_work, next_load_is_work;    //Calculate the vaild signal
 	reg sel_input, next_sel_input;
     reg [`PE_ROW-1:0] is_finish;
     reg l1;
     wire [`DWIDTH-1:0] final_sum[`PE_COL-1:0];
 
-    // 定义 partial_sum 和 prod 的初始值
+    // Define the initial values of partial_sum and prod
     wire [`DWIDTH-1:0] partial_sum[`PE_ROW:0][`PE_COL-1:0];
     wire [`DWIDTH-1:0] prod[`PE_ROW:0][`PE_COL-1:0];
     
-    // 为第一行初始化 partial_sum 和 prod
+    // Initialize partial_sum and prod for the first line
     genvar p;
     generate
         for (p = 0; p < `PE_COL; p = p + 1) begin: init_first_row
-            assign partial_sum[0][p] = {`DWIDTH{1'b0}}; // 初始值为 0
-            assign prod[0][p] = {`DWIDTH{1'b0}}; // 初始值为 0
+            assign partial_sum[0][p] = {`DWIDTH{1'b0}}; // The initial value is 0
+            assign prod[0][p] = {`DWIDTH{1'b0}}; // The initial value is 0
         end
     endgenerate
     
-    wire PEvalid_wire[`PE_ROW+1:0][`PE_COL-1:0]; // 每个PE的数据输入有效信号
+    wire PEvalid_wire[`PE_ROW+1:0][`PE_COL-1:0]; // The valid signal of each PE
     reg PEvalid_firstrow[`PE_COL-1:0];
     reg PEweight_valid;
-    //reg [`DWIDTH-1:0] X_value[`PE_ROW:0][`PE_COL-1:0]; // 中间传递的不变的X值
     reg [`DWIDTH-1:0] X_value_firstrow[`PE_COL-1:0];
     wire [`DWIDTH-1:0] X_value_wire[`PE_ROW:0][`PE_COL-1:0];
     reg [`DWIDTH-1:0] din_weight[`PE_ROW-1:0][`PE_COL-1:0];
 
-    // 计数器，用于控制数据输入
-    reg [31:0] index;     // 8-bit 索引 (用于控制哪排传入阵列)
-    //reg counter;         // 1-bit 计数器，用于实现2周期更新
+    // Counter, used to control data input
+    reg [31:0] index;     //8-bit index (used to control which row to input)
+    
     
     reg can_use;
-    //reg output_can_use;
     wire can_use_wire[`PE_ROW:0][`PE_COL-1:0];
 
 
@@ -66,18 +64,15 @@ module Systolic_subsystem(
    
 	
 
-  // 状态机组合逻辑 - 计算下一个状态和输出
+  // State machine
 always @(*) begin
-    // 默认保持当前状态和输出不变
+   
     
     
     case (mode)
         INIT: begin
-            // INIT状态下的默认输出
-            //next_load_is_work = 1'b0;
-            //next_sel_input = SELD;
-            
-            // 状态转换逻辑
+          
+           
             if (PEmode == 2'b01) begin
                 next_mode = WLOD;
                
@@ -94,32 +89,32 @@ always @(*) begin
         end
         
         WLOD: begin
-            // WLOD状态下的默认输出
+            // The default output in the WLOD state
             next_load_is_work = 1'b0;
             
-            // 状态转换逻辑
+       
             if (out_valid) begin
                 next_sel_input = SELW;           
                 next_mode = INIT;
                 
 			end else begin
 				next_mode = INIT;
-                next_sel_input = SELD;  // 返回INIT时更新sel_input
+                next_sel_input = SELD;  // Update sel_input when returning INIT
 			end
         end
         
         DLOD: begin
-            // DLOD状态下的默认输出
+            // DThe default output in the DLOD state
             next_sel_input = SELD;
             
-            // 状态转换逻辑
+          
            
                 next_mode = INIT;
-                next_load_is_work = 1'b1;  // 返回INIT且out_valid为1时设置load_is_work为1
+                next_load_is_work = 1'b1;  // Return INIT and set load_is_work to 1 when out_valid is 1
         end
         
         default: begin
-            // 默认情况，恢复到INIT状态
+            // By default, restore to the INIT state
             next_mode = INIT;
             next_load_is_work = 1'b0;
             next_sel_input = SELD;
@@ -127,23 +122,23 @@ always @(*) begin
     endcase
 end
 
-// 状态机时序逻辑 - 寄存器更新
+// PE register update
 always @(posedge clk ) begin
     if (~rst_n) begin
-        // 复位时初始化所有状态寄存器
+        // Initialize all status registers when resetting
         mode <= INIT;
         load_is_work <= 1'b0;
         sel_input <= SELD;
         is_finish <= 0;
         load_is_finish<=0;
-         // 初始化所有 PEvalid 为 0
+         // Initialize all PEvalid to 0
             for (v = 0; v <= `PE_COL-1; v = v + 1) begin
                 PEvalid_firstrow[v] <= 1'b0;
             end
             is_finish <= 0;
          
     end else begin
-        // 在时钟上升沿更新所有状态寄存器
+        // Update all status registers at the rising edge of the clock
         mode <= next_mode;
        
 
@@ -159,7 +154,7 @@ always @(posedge clk ) begin
 
 
            
-            // 根据 load_is_work 更新第一行 PEvalid
+            // Update the first line PEvalid based on load_is_work
             for (v = 0; v <= `PE_COL-1; v = v + 1) begin
                 PEvalid_firstrow[v] <= load_is_work;
             end
@@ -169,14 +164,11 @@ always @(posedge clk ) begin
             is_finish[index-1] <= l1;
     
           
-                //储存结果的模块
+               // Used to detect whether the data of each row has been calculated
         if (is_finish[index-1]) begin
-        
-
-              // 检查输出有效信号来更新 is_finsh
-          
-                //当所有的计算都完成时
+    
                 final_is_finish<=0;
+                // When all the calculations are completed
             if(&is_finish) begin
               
                 index<=1;
@@ -201,12 +193,12 @@ end
 
 
 
-    // 根据 sel_input 为 din_weight 或 X_value 赋值
+    // Assign values to din_weight or X_value based on sel_input
     integer i1, j1, k1,i2;
     always @(*) begin
 
         
-        // 根据 sel_input 选择性地更新对应的值
+        // Selectively update the corresponding value based on sel_input
         if (sel_input) begin
             for (i1 = 0; i1 < `PE_ROW; i1 = i1 + 1) begin
                 for (j1 = 0; j1 < `PE_COL; j1 = j1 + 1) begin
@@ -237,16 +229,16 @@ end
 reg [31:0] store_index=1;
 
 
-// 计数器逻辑
+//Counter logic
     always @(posedge clk ) begin
         can_use<=0;
         if (!rst_n) begin
-            //counter <= 1'b0;  // 计数器复位
-            index <= 1;   // 索引复位
+         
+            index <= 1;   // Index reset
         end else if (load_is_work && is_finish[index-1]) begin
-           // counter <= counter + 1'b1; // 计数器递增
+          
            
-                index <= (index == `PE_ROW) ? index : (index + 1); // 修正溢出的问题 
+                index <= (index == `PE_ROW) ? index : (index + 1); // Fix the overflow problem
                 can_use <=1;
             
         end  
@@ -277,7 +269,7 @@ reg [31:0] store_index=1;
 
 
 
-    // PEvalid 初始化逻辑
+    // PEvalid initialization logic
 
 
 always@(*) begin
@@ -297,7 +289,7 @@ end
 
 
    
-    //控制PE权重的有效信号
+    // Valid signal for controlling the PE weight
     always@(*) begin
         if (sel_input) begin
              PEweight_valid=1;
@@ -311,7 +303,7 @@ end
   
 
 
-// 实例化脉动阵列
+// Instantiate the systolic array
     genvar i, j;
 
     generate
@@ -338,7 +330,7 @@ end
         endgenerate
 
 
-
+    //Instantiate the PE module
     generate
         for (i = 1; i < `PE_ROW; i = i + 1) begin: proc_i
             for (j = 0; j < `PE_COL; j = j + 1) begin: proc_j
@@ -362,7 +354,7 @@ end
         end
     endgenerate
 
-    // 实例化输出累加器
+    // Instantiate the output accumulator
     genvar k;
     generate
         for (k = 0; k < `PE_COL; k = k + 1) begin: proc_k
