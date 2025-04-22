@@ -30,8 +30,9 @@ All the following running processes are completed under the Ubuntu 22.04.5 LTS
 
 # How to run it  
 
-In order to run this project, it is necessary to install the relevant dependencies and toolchains first.
+In order to run this project, it is necessary to install the relevant dependencies and toolchains first. But if you have used PicoRV32 before, please jump directly to the last row.  
 
+You need to do is to delete the `makefile` and run the following command using the `Makefile` of the Picorv32 project
 
 ```
 sudo apt-get install autoconf automake autotools-dev curl libmpc-dev \
@@ -50,6 +51,8 @@ make download-tools
 make -j$(nproc) build-tools  
 ```
 
-After all the toolchains have been installed, this project can be run. If tool chain installation on the problems, it is suggested that visit PicoRV32 original project at https://github.com/YosysHQ/picorv32
+After all the toolchains have been installed, this project can be run. If tool chain installation on the problems, it is suggested that visit PicoRV32 original project at https://github.com/YosysHQ/picorv32  
+
+Before running this item, please ensure that you have restored the file `makefile`.
 
 You can directly enter `make` in the terminal to run the program. If you want to view the waveform, you need to complete the simulation and then enter `gtkwave waveform.vcd`,provided that gtkwave is installed on your computer.
